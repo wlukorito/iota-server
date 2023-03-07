@@ -1,4 +1,96 @@
 {
-  "items": [],
-  "inventory": []
+  "items": [
+    {
+      "id": "3da1d276-c5de-492d-b859-f446b1e05c8d",
+      "name": "laptops",
+      "color": "Black",
+      "price": 5634500
+    }
+  ],
+  "inventory": [
+    {
+      "id": "00010fa7-676b-4c0a-a775-05cc086bd839",
+      "supplyChainItemId": "3da1d276-c5de-492d-b859-f446b1e05c8234d",
+      "quantity": 50
+    }
+  ],
+  "couriers": [
+    {
+      "id": "ab2c771e-25cd-419c-8aa0-4cd0a24b94cd",
+      "name": "c1",
+      "location": "location 2904"
+    },
+    {
+      "id": "b5a995ed-3505-47ae-8778-897a62e8b766",
+      "name": "c2",
+      "location": "location 2908"
+    },
+    {
+      "id": "b9ad5a93-ce5f-40f5-80f9-882f4a93c608",
+      "name": "c3",
+      "location": "location 2912"
+    },
+    {
+      "id": "ec0dae7f-a4c6-4260-8db3-1664ca1729a9",
+      "name": "c4",
+      "location": "location 2916"
+    },
+    {
+      "id": "fa311f42-018e-492c-a6d5-b06a66bef39e",
+      "name": "c5",
+      "location": "location 2920"
+    }
+  ],
+  "warehouses": [
+    {
+      "id": "396cb0dc-5783-4bea-a535-c83ebd68b801",
+      "name": "w1",
+      "location": "location 1104"
+    },
+    {
+      "id": "8e8d2a22-6b04-4b9e-942e-a307fdc393e1",
+      "name": "w2",
+      "location": "location 1108"
+    },
+    {
+      "id": "adb36fad-164b-416f-bfaa-b8b70555cfea",
+      "name": "w3",
+      "location": "location 1112"
+    },
+    {
+      "id": "33133742-1ac3-4a09-843a-b490495b05a0",
+      "name": "w4",
+      "location": "location 1116"
+    },
+    {
+      "id": "91927cf5-6e9b-47e7-bc0a-eaed65e89e6e",
+      "name": "w5",
+      "location": "location 1120"
+    }
+  ],
+  "supplies": [
+    {
+      "supplyChainItemId": "3da1d276-c5de-492d-b859-f446b1e05c8234d",
+      "price": 5634500,
+      "quantity": 50,
+      "warehouse": { "id": 1, "name": "w1", "location": "nairobi" },
+      "status": "Delivered",
+      "movement": "Inbound",
+      "orderDate": "20/08/2022",
+      "expectedDeliveryDate": "20/08/2022",
+      "supplier": { "id": 1, "name": "s1" },
+      "id": "3c08bf9c-0d58-4399-a8ad-72f215c292d7",
+      "shippedOn": "25/08/2022",
+      "courier": { "id": 1, "name": "c1", "location": "nairobi" },
+      "deliveryDate": "28/08/2022"
+    }
+  ],
+  "suppliers": [
+    { "id": "e9ee533f-98f0-4015-9d84-3769b39deec5", "name": "s21" },
+    { "id": "7cfeba51-4578-453b-beba-b4e4d06f8cdc", "name": "s31" },
+    { "id": "e52ae1eb-fcf0-4504-8067-5721990823eb", "name": "s32" },
+    { "id": "caaec675-bb38-4141-8f36-34418651d631", "name": "s33" },
+    { "id": "16319560-c621-496b-822e-fd810fe84b12", "name": "s34" },
+    { "id": "d59f679f-a27f-4cbd-941a-578986ae54c2", "name": "s35" }
+  ]
 }
