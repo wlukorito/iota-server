@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import { v4 as uuid } from "uuid";
+import omit from "lodash/omit";
 
 import { createDbItem, getSupplyChainDbItem, updateDbItem } from "./db-client";
 import {
@@ -13,7 +14,12 @@ import {
   Courier,
   Warehouse,
   Supplier,
+  SuppliesExchange,
+  SuppliesResponse,
+  supplyChainItemSchema,
+  suppliesExchangeSchema,
 } from "./interfaces";
+import { ZodError } from "zod";
 
 dotenv.config();
 
@@ -27,14 +33,20 @@ app.post(
   "/items",
   async (
     req: Request<{}, {}, SupplyChainItem>,
-    res: Response<SupplyChainItem>
+    res: Response<SupplyChainItem | ZodError>
   ) => {
     const supplyChainItem = {
       ...req.body,
       id: uuid(),
     };
 
-    const data = await createDbItem("items", supplyChainItem);
+    const validation = supplyChainItemSchema.safeParse(supplyChainItem);
+    if (!validation.success) {
+      res.status(400).send(validation.error);
+      return;
+    }
+
+    await createDbItem("items", supplyChainItem);
 
     res.status(200).send(supplyChainItem);
   }
@@ -42,11 +54,28 @@ app.post(
 
 app.post(
   "/events",
-  async (req: Request<{}, {}, Supplies>, res: Response<Supplies>) => {
-    const { movement, supplyChainItemId, quantity } = req.body;
+  async (
+    req: Request<{}, {}, SuppliesExchange>,
+    res: Response<SuppliesExchange | ZodError>
+  ) => {
+    const item = {
+      ...req.body,
+      id: uuid(),
+    };
+
+    const validation = suppliesExchangeSchema.safeParse(item);
+    if (!validation.success) {
+      res.status(400).send(validation.error);
+      return;
+    }
+
+    const { movement, supplyChainItemId, quantity } = item;
+
     if (movement === "Outbound") {
       const inventory = await getSupplyChainDbItem<Inventory>("inventory");
-      const found = inventory.find((item) => item.id === supplyChainItemId);
+      const found = inventory.find(
+        (item) => item.supplyChainItemId === supplyChainItemId
+      );
       if (!found || found.quantity < quantity) {
         res.status(500).send();
         return;
@@ -58,11 +87,6 @@ app.post(
       });
     }
 
-    const item = {
-      ...req.body,
-      id: uuid(),
-    };
-
     await createDbItem("supplies", item);
 
     res.status(200).send(item);
@@ -73,10 +97,11 @@ app.patch(
   "/items",
   async (
     req: Request<{}, {}, SupplyChainItem>,
-    res: Response<SupplyChainItem>
+    res: Response<SupplyChainItem | ZodError>
   ) => {
-    if (!req.body.id) {
-      res.status(400).send();
+    const validation = supplyChainItemSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).send(validation.error);
       return;
     }
 
@@ -88,13 +113,17 @@ app.patch(
 
 app.patch(
   "/events",
-  async (req: Request<{}, {}, Supplies>, res: Response<Supplies>) => {
-    if (!req.body.id) {
-      res.status(400).send();
+  async (
+    req: Request<{}, {}, SuppliesExchange>,
+    res: Response<SuppliesExchange | ZodError>
+  ) => {
+    const validation = suppliesExchangeSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).send(validation.error);
       return;
     }
 
-    const data = await updateDbItem<Supplies>("supplies", req.body);
+    const data = await updateDbItem<SuppliesExchange>("supplies", req.body);
 
     const { status, movement, supplyChainItemId, quantity } = data;
 
@@ -126,17 +155,42 @@ app.get("/items", async (_, res: Response<SupplyChainItem[]>) => {
   res.status(200).send(items);
 });
 
+app.get("/events", async (_, res: Response<SuppliesResponse[]>) => {
+  const exchangesPromise = getSupplyChainDbItem<SuppliesExchange>("supplies");
+  const couriersPromise = getSupplyChainDbItem<Courier>("couriers");
+  const warehousesPromise = getSupplyChainDbItem<Warehouse>("warehouses");
+  const supliersPromise = getSupplyChainDbItem<Supplier>("suppliers");
+
+  const [exchanges, couriers, warehouses, suppliers] = await Promise.all([
+    exchangesPromise,
+    couriersPromise,
+    warehousesPromise,
+    supliersPromise,
+  ]);
+
+  const response: SuppliesResponse[] = exchanges.map((exchange) => ({
+    ...omit(exchange, ["courier", "warehouse", "supplier"]),
+    courier: couriers.find((c) => c.id === exchange.courier)!!,
+    warehouse: warehouses.find((w) => w.id === exchange.warehouse)!!,
+    supplier: suppliers.find((s) => s.id === exchange.supplier)!!,
+  }));
+
+  res.status(200).send(response);
+});
+
 app.get("/lists", async (_, res: Response<Partial<SupplyChain>>) => {
   const p1 = getSupplyChainDbItem<Courier>("couriers");
   const p2 = getSupplyChainDbItem<Warehouse>("warehouses");
   const p3 = getSupplyChainDbItem<Supplier>("suppliers");
+  const p4 = getSupplyChainDbItem<SupplyChainItem>("items");
 
-  const result = await Promise.all([p1, p2, p3]);
+  const result = await Promise.all([p1, p2, p3, p4]);
 
   const response: Partial<SupplyChain> = {
     couriers: result[0],
     warehouses: result[1],
     suppliers: result[2],
+    items: result[3],
   };
 
   res.status(200).send(response);

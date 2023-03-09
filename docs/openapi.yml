@@ -1,0 +1,340 @@
+openapi: 3.0.0
+
+info:
+  title: Supply Chain Track and Trace API
+  description: API that allows users to track and trace supply chain items.
+  version: 1.0.0
+
+paths:
+  /items:
+    post:
+      summary: Creates a Supply Chain items.
+      requestBody:
+        $ref: '#/components/requestBodies/ItemBody'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplyChainItem'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+
+    get:
+      summary: Gets list of items
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/SupplyChainItemResponse'
+      
+    patch:
+      summary: Update an item
+      requestBody:
+        $ref: '#/components/requestBodies/ItemBody'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplyChainItem'
+        '400':
+          description: Bad request
+          $ref: '#/components/responses/400BadRequest'
+        
+
+  /events:
+    post:
+      summary: Creates a Supply Chain event.
+      requestBody:
+        $ref: '#/components/requestBodies/EventRequestBody'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuppliesResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+
+    get:
+      summary: Gets list of events
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/SuppliesExchange'
+      
+    patch:
+      summary: Update an event
+      requestBody:
+        $ref: '#/components/requestBodies/EventRequestBody'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuppliesResponse'
+        '400':
+          description: Bad request
+          $ref: '#/components/responses/400BadRequest'
+
+  /lists:
+    get:
+      summary: Gets list of events
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplyChain'
+
+
+components:
+  requestBodies:
+    ItemBody:
+      description: Supply chain item.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SupplyChainItem'
+
+    EventRequestBody:
+      description: Supply chain event.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SupplyChainItem'
+
+  schemas:
+    SupplyChainItem:
+      type: object
+      description: supply chain item
+      properties:
+        id:
+          type: string
+          description: uuid-generated id
+          example: 3da1d276-c5de-492d-b859-f446b1e05c8d
+        name:
+          type: string
+          description: item name
+          example: laptop
+        color:
+          type: string
+          description: item color
+          example: gray
+        price:
+          type: number
+          description: item price
+          example: 567.8
+
+    Warehouse:
+      type: object
+      description: warehouse
+      properties:
+        id:
+          type: string
+          description: uuid-generated id
+          example: 3da1d276-c5de-492d-b859-f446b1e05c8d
+        name:
+          type: string
+          description: warehouse name
+          example: w1
+        location:
+          type: string
+          description: warehouse location
+          example: denver
+
+    Supplier:
+      type: object
+      description: supplier
+      properties:
+        id:
+          type: string
+          description: uuid-generated id
+          example: 3da1d276-c5de-492d-b859-f446b1e05c8d
+        name:
+          type: string
+          description: supplier name
+          example: s1
+
+    Courier:
+      type: object
+      description: courier
+      properties:
+        id:
+          type: string
+          description: uuid-generated id
+          example: 3da1d276-c5de-492d-b859-f446b1e05c8d
+        name:
+          type: string
+          description: courier name
+          example: w1
+        location:
+          type: string
+          description: courier location
+          example: denver
+
+    SuppliesResponse:
+      type: object
+      description: supplies
+      properties:
+        id:
+          type: string
+          description: uuid-generated id
+          example: 3da1d276-c5de-492d-b859-f446b1e05c8d
+        isupplyChainItemId:
+          type: string
+          description: uuid-generated id
+          example: 3da1d276-c5de-492d-b859-f446b1e05c8d
+        quantity:
+          type: number
+          description: quantity
+          example: 22
+        price:
+          type: number
+          description: price
+          example: 34.8
+        status:
+          type: string
+          description: status
+          enum:
+            - Ordered
+            - Awaiting Delivery
+            - Shipped
+            - Delivered
+          default: Ordered
+        movement:
+          type: string
+          description: movement
+          enum:
+            - Inbound
+            - Outbound
+          default: Outbound
+        destination:
+          type: string
+          description: destination
+          example: nairobi
+        orderDate:
+          type: string
+          description: order Date
+          example: 2023-03-09
+        expectedDeliveryDate:
+          type: string
+          description: Expected delivery Date
+          example: 2023-03-13
+        shippedOn:
+          type: string
+          description: Shipped Date
+          example: 2023-03-16
+        deliveryDate:
+          type: string
+          description: Delivery Date
+          example: 2023-03-18
+        warehouse:
+          $ref: "#/components/schemas/Warehouse"
+        courier:
+          $ref: "#/components/schemas/Courier"
+        supplier:
+          $ref: "#/components/schemas/Supplier"
+
+    Issue:
+      type: object
+      properties:
+        code:
+          type: string
+          example: invalid_type
+        expected: 
+          type: string
+          example: string
+        received: 
+          type: string
+          example: undefined
+        path:
+          type: array
+          items:
+            oneOf:
+              - type: string
+          example: ["price"]
+        message:
+            type: string
+            example: Required
+
+    SupplyChain:
+      type: object
+      description: Object with couriers, suppliers, warehouses and supplyChain items
+      properties:
+        couriers:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Courier"
+        suppliers:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Supplier"
+        warehouses:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/Warehouse"
+        items:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/SupplyChainItem"
+
+    Error:
+      type: object
+      properties:
+        issues:
+          type: array
+          description: errors list
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Issue'
+        name:
+          type: string
+          description: error type
+          example: ZodError
+
+  responses:
+    400BadRequest:
+      description: Bad request object
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    SupplyChainItemResponse:
+      description: Supply chain success response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              oneOf:
+                - $ref: "#/components/schemas/SupplyChainItem"
+
+    SuppliesExchange:
+      description: Supply event success response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              oneOf:
+                - $ref: "#/components/schemas/SuppliesResponse"
+
